@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cryo Lab: how antifreeze molecules keep cells alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E8F1F5;--panel:#fff;--ink:#0F2B3D;--muted:#566F7E;--line:#CBDDE5;--cryo:#1F6FD1;--teal:#0E9C8B;--coral:#E8564E;--amber:#E39A14;--violet:#6D4DE0;--soft:#F1F7FA;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1A26;--panel:#122B3E;--ink:#E7F2F7;--muted:#9BB5C3;--line:#265069;--cryo:#5BA3F5;--teal:#2FCDB8;--coral:#FF7B72;--amber:#F5B93F;--violet:#9C86FF;--soft:#0F2536}}
+:root[data-theme="dark"]{--bg:#0B1A26;--panel:#122B3E;--ink:#E7F2F7;--muted:#9BB5C3;--line:#265069;--cryo:#5BA3F5;--teal:#2FCDB8;--coral:#FF7B72;--amber:#F5B93F;--violet:#9C86FF;--soft:#0F2536}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100%}
+h1,h2,h3{font-family:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;margin:0;line-height:1.15;letter-spacing:-.01em}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--cryo);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;padding:16px}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand h1{font-size:clamp(24px,3.4vw,38px);font-weight:800}
+.brand p{margin:4px 0 0;color:var(--muted);max-width:560px}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs button{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.page{display:none}.page.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h3{font-size:17px;margin-bottom:10px}
+.stage{position:relative;border-radius:20px;overflow:hidden;background:#111;border:1px solid var(--line);aspect-ratio:9/5.4}
+.stage canvas{display:block;width:100%;height:100%}
+.chip{position:absolute;background:rgba(10,25,38,.72);color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;backdrop-filter:blur(4px)}
+#phaseChip{left:12px;top:12px;font-family:'Bricolage Grotesque',sans-serif;font-size:15px}
+#legend{left:12px;bottom:12px;display:flex;gap:12px;flex-wrap:wrap;border-radius:12px;font-weight:500;font-size:12px}
+#legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+#verdict{left:50%;top:14px;transform:translateX(-50%);display:none;font-size:15px}
+.thermo{position:absolute;right:14px;top:14px;bottom:14px;width:86px;color:#fff;pointer-events:none}
+.thermo .tube{position:absolute;right:8px;top:34px;bottom:8px;width:14px;border-radius:8px;background:rgba(255,255,255,.18);overflow:hidden}
+.thermo .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#ff6b5b,#6ec1ff);border-radius:8px}
+.thermo .big{position:absolute;right:0;top:0;font:800 22px 'Bricolage Grotesque',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.5);white-space:nowrap}
+.thermo .tick{position:absolute;right:28px;font-size:10.5px;text-shadow:0 1px 4px rgba(0,0,0,.7);white-space:nowrap;transform:translateY(50%)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 14px;font-weight:600}
+.btn.primary{background:var(--cryo);border-color:var(--cryo);color:#fff}
+.btn:hover{filter:brightness(1.06)}
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
+.step{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 6px;text-align:center;font-size:12.5px;font-weight:600;overflow:hidden;color:var(--muted)}
+.step b{display:block;font-size:11px;font-weight:500}
+.step .bar{position:absolute;left:0;bottom:0;height:4px;background:var(--cryo);width:0}
+.step.on{color:var(--ink);border-color:var(--cryo)}
+.step.done{color:var(--ink)}.step.done .bar{width:100%;background:var(--teal)}
+.narr h2{font-size:22px;margin-bottom:6px}
+.narr p{margin:0;font-size:16px;max-width:75ch}
+.results{display:grid;grid-template-columns:auto 1fr;gap:16px;margin-top:16px}
+@media(max-width:700px){.results{grid-template-columns:1fr}}
+.gauge{position:relative;width:150px;height:150px;margin:auto}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font:800 34px 'Bricolage Grotesque',sans-serif}
+.gauge .num small{display:block;font:500 11px 'Instrument Sans',sans-serif;color:var(--muted)}
+.bars .row{display:grid;grid-template-columns:150px 1fr 40px;gap:8px;align-items:center;font-size:13px;margin:5px 0}
+.bars .track{height:10px;border-radius:6px;background:var(--soft);overflow:hidden}
+.bars .fillb{height:100%;background:var(--coral);width:0;transition:width .35s}
+.coach{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--soft);border-left:4px solid var(--amber);font-size:14px}
+.coach.good{border-color:var(--teal)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+#chart{width:100%;height:170px;display:block}
+#dots{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
+#dots span{aspect-ratio:1;border-radius:50%;background:var(--line);transition:background .4s}
+#dots span.a{background:var(--teal)}#dots span.d{background:var(--coral)}
+.cap{font-size:12.5px;color:var(--muted);margin-top:6px}
+label.f{display:block;font-weight:600;font-size:13.5px;margin:12px 0 5px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.seg button{border:0;background:transparent;padding:8px;border-radius:8px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+select{width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel)}
+.cpas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cpas button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 4px;font-size:13px;font-weight:600;line-height:1.2}
+.cpas button small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+.cpas button[aria-pressed="true"]{border-color:var(--cryo);box-shadow:inset 0 0 0 1px var(--cryo);background:var(--soft)}
+input[type=range]{width:100%;accent-color:var(--cryo)}
+.val{float:right;font-weight:700;color:var(--cryo)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:2px}
+.adds label{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px;cursor:pointer}
+.adds input{margin-top:4px;accent-color:var(--teal);width:16px;height:16px;flex:none}
+.adds small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.mix{display:flex;height:26px;border-radius:8px;overflow:hidden;margin:8px 0}
+.mix div{display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap}
+ul.rec{margin:8px 0 0;padding-left:18px;font-size:14px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.filters button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px;font-weight:600;font-size:13px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.cc{display:flex;flex-direction:column;gap:8px}
+.cc .hd{display:flex;gap:10px;align-items:center}
+.cc h3{font-size:16px;margin:0}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;color:#fff}
+.b-Routine{background:#0E9C8B}.b-Established{background:#1F6FD1}.b-Emerging{background:#C98207}.b-Experimental{background:#B4552D}.b-Not{background:#6B7785}
+.cc p{margin:0;font-size:13.5px}.cc .k{font-weight:600}
+.cc .btn{margin-top:auto;font-size:13px;padding:7px 10px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-family:'Bricolage Grotesque',sans-serif;font-size:14px}
+.scroll{overflow-x:auto}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:16px}
+.cols p{margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:560px){.steps{grid-template-columns:repeat(3,1fr)}.thermo{width:64px}.bars .row{grid-template-columns:110px 1fr 36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+ <div class="brand"><h1>Cryo Lab</h1><p>Watch antifreeze molecules protect a living cell from −196 °C, then tweak the recipe yourself.</p></div>
+ <div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="sim">Simulator</button>
+  <button role="tab" aria-selected="false" data-tab="cells">Cells you can freeze</button>
+  <button role="tab" aria-selected="false" data-tab="guide">Recipe guide</button>
+ </div>
+</header>
+
+<section class="page on" id="p-sim">
+<div class="grid">
+ <div>
+  <div class="stage">
+   <canvas id="cv" aria-label="Animated cell being cryopreserved"></canvas>
+   <div class="chip" id="phaseChip"></div>
+   <div class="chip" id="verdict"></div>
+   <div class="chip" id="legend"></div>
+   <div class="thermo" id="thermo"><div class="big" id="tnum"></div><div class="tube"><div class="fill" id="tfill"></div></div></div>
+  </div>
+  <div class="controls">
+   <button class="btn primary" id="play">Play full demo</button>
+   <button class="btn" id="restart">Restart</button>
+   <label>Speed <select id="speed" style="width:auto;display:inline-block"><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+   <span class="hint">Space = play / pause. Click a step to jump.</span>
+  </div>
+  <div class="steps" id="steps"></div>
+  <div class="card narr" id="narr"></div>
+  <div class="card results">
+   <div class="gauge"><svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="ring" cx="75" cy="75" r="62" fill="none" stroke="var(--teal)" stroke-width="14" stroke-linecap="round" stroke-dasharray="390" stroke-dashoffset="390" style="transition:stroke-dashoffset .4s,stroke .4s"/></svg><div class="num"><div><span id="surv">0%</span><small>expected to survive</small></div></div></div>
+   <div><h3>Where cells are lost</h3><div class="bars" id="bars"></div><div class="coach" id="coach"></div></div>
+  </div>
+  <div class="two">
+   <div class="card"><h3 id="chartT">Survival vs cooling rate</h3><canvas id="chart" width="520" height="340"></canvas><div class="cap" id="chartC"></div></div>
+   <div class="card"><h3>100 cells after thawing</h3><div id="dots"></div><div class="cap" id="dotsC">Reaches the end of the demo to reveal which cells lived.</div></div>
+  </div>
+ </div>
+ <div>
+  <div class="card">
+   <h3>Your freezing recipe</h3>
+   <div class="seg" id="mode"><button data-m="slow" aria-pressed="true">Slow freezing</button><button data-m="vitri" aria-pressed="false">Vitrification</button></div>
+   <div class="hint" id="modeH"></div>
+   <label class="f" for="cellSel">Cell type</label>
+   <select id="cellSel"></select>
+   <button class="btn" id="useRec" style="margin-top:8px;width:100%">Use the recommended recipe</button>
+   <label class="f">Cryoprotectant (CPA)</label>
+   <div class="cpas" id="cpas"></div>
+   <div class="hint" id="cpaNote"></div>
+   <label class="f" for="conc">CPA concentration <span class="val" id="concV"></span></label>
+   <input type="range" id="conc"><div class="hint" id="concH"></div>
+   <label class="f" for="eq">Soaking time before freezing <span class="val" id="eqV"></span></label>
+   <input type="range" id="eq"><div class="hint">Permeating CPAs need time to get inside; too long and they poison the cell.</div>
+   <label class="f" for="rate">Cooling speed <span class="val" id="rateV"></span></label>
+   <input type="range" id="rate"><div class="hint" id="rateH"></div>
+   <label class="f">Extra ingredients</label>
+   <div class="adds" id="adds"></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+   <h3>Freezing medium to mix</h3>
+   <div class="mix" id="mix"></div>
+   <ul class="rec" id="recipe"></ul>
+  </div>
+ </div>
+</div>
+</section>
+
+<section class="page" id="p-cells">
+ <div class="card" style="margin-bottom:14px"><h3>Which cells can be preserved?</h3><p style="margin:0;max-width:75ch">Small, simple cells freeze best. The bigger, more delicate and more organised the living thing is, the harder it is to stop ice from hurting it. Pick “Try it” to load that cell into the simulator with its usual recipe.</p></div>
+ <div class="filters" id="filters"></div>
+ <div class="cells" id="cellGrid"></div>
+</section>
+
+<section class="page" id="p-guide">
+ <div class="cols" id="why"></div>
+ <div class="card" style="margin-bottom:16px"><h3>Cryoprotectants: what to use and how much</h3><div class="scroll"><table id="cpaT"></table></div></div>
+ <div class="card"><h3>What else goes in the vial</h3><div class="scroll"><table id="addT"></table></div>
+ <p class="cap">This is a simplified teaching model. Real protocols must be validated for each cell line and follow lab safety rules.</p></div>
+</section>
+</div>
+<script>
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const lg=x=>Math.log10(x);
+
+const CPAS={
+  dmso:{name:'DMSO',full:'Dimethyl sulfoxide',perm:true,eff:1,tau:8,tox:.08,typ:'5–10 % (v/v)',
+    note:'The lab workhorse. Slips through the membrane and replaces water inside the cell. Toxic above ~10 % or if cells sit in it warm.'},
+  gly:{name:'Glycerol',full:'Glycerol',perm:true,eff:.85,tau:20,tox:.03,typ:'10–15 % (red blood cells up to ~40 %)',
+    note:'Gentle but slow to enter cells, so it needs a longer equilibration. The classic choice for red blood cells, sperm and bacteria.'},
+  eg:{name:'Ethylene glycol',full:'Ethylene glycol',perm:true,eff:.95,tau:5,tox:.045,typ:'10–20 % (up to ~15 % in vitrification cocktails)',
+    note:'Small and fast: enters cells in minutes. A key ingredient in egg and embryo vitrification.'},
+  pg:{name:'Propylene glycol',full:'1,2-Propanediol',perm:true,eff:.9,tau:8,tox:.055,typ:'~1.5 M (≈ 11 %)',
+    note:'Common in slow freezing of embryos, usually with sucrose.'},
+  tre:{name:'Trehalose',full:'Trehalose (sugar)',perm:false,eff:.4,tau:0,tox:.005,typ:'0.1–0.3 M (≈ 4–10 %)',
+    note:'Too big to enter cells. It stays outside, pulls water out gently and supports the membrane. Best used together with a permeating CPA.'},
+  suc:{name:'Sucrose',full:'Sucrose (sugar)',perm:false,eff:.35,tau:0,tox:.005,typ:'0.1–0.5 M (≈ 3–17 %)',
+    note:'Non-permeating. Controls how much water leaves the cell so it does not swell and burst when the CPA is removed.'}
+};
+
+const ADDS={
+  serum:{name:'Serum, albumin or egg yolk',why:'Coats and steadies the membrane, lowers CPA toxicity (10–90 % of the medium).',protB:.04,toxCut:.25},
+  treh:{name:'Trehalose or sucrose (0.2 M)',why:'Non-entering sugar: gentle dehydration and membrane support.',protB:.05,slowCut:.2,vit:4},
+  macro:{name:'Dextran or Ficoll',why:'Big polymers that add glass-forming power with little toxicity.',protB:.02,toxCut:.1,vit:3},
+  ice:{name:'Ice blockers (PVA, antifreeze proteins)',why:'Stop tiny ice crystals from growing back while thawing.',protB:.03,vit:6},
+  rock:{name:'ROCK inhibitor (Y-27632)',why:'Keeps fragile stem cells from self-destructing after thaw.',post:.01},
+  anti:{name:'Antioxidants (vitamin E, glutathione)',why:'Mop up reactive oxygen made during freezing and thawing.',post:.03,toxCut:.05}
+};
+
+/* status: Routine, Established, Emerging, Experimental, Not yet */
+const CELLS=[
+ {id:'rbc',name:'Red blood cells',group:'Blood',status:'Routine',shape:'disc',color:'#E0483F',frag:1,r0:1,permScale:.5,toxScale:.15,pref:{gly:1.1,dmso:.85},
+  use:'Rare blood types, military and disaster reserves. Frozen units keep for up to 10 years.',
+  how:'High-glycerol method (~40 % w/v), deglycerolised by washing after thaw.',
+  rec:{mode:'slow',cpa:'gly',conc:40,eq:20,rate:1,add:[]}},
+ {id:'sperm',name:'Sperm',group:'Reproductive',status:'Routine',shape:'sperm',color:'#5B7FA6',frag:1.5,r0:10,pref:{dmso:.6},
+  use:'Fertility clinics, sperm donation, cattle and endangered-species breeding.',
+  how:'Glycerol with egg yolk or a protein extender; cooled in liquid-nitrogen vapour.',
+  rec:{mode:'slow',cpa:'gly',conc:10,eq:30,rate:10,add:['serum']}},
+ {id:'embryo',name:'Embryos (IVF)',group:'Reproductive',status:'Routine',shape:'embryo',color:'#C9852B',frag:1.3,r0:.3,permScale:1.3,pref:{eg:1.1,gly:.8},
+  use:'IVF: freeze extra embryos and transfer later, healthy babies born from frozen embryos worldwide.',
+  how:'Vitrification with ethylene glycol + DMSO + sucrose, or slow freezing with propanediol.',
+  rec:{mode:'vitri',cpa:'eg',conc:35,eq:5,rate:20000,add:['treh','ice']}},
+ {id:'oocyte',name:'Oocytes (eggs)',group:'Reproductive',status:'Established',shape:'embryo',color:'#D0678F',frag:1.6,r0:.3,permScale:1.5,toxScale:1.2,pref:{eg:1.1,gly:.7},
+  use:'Fertility preservation, e.g. before cancer treatment or by choice. Vitrification greatly improved results.',
+  how:'Ultra-fast vitrification on a thin carrier with EG + DMSO + sucrose.',
+  rec:{mode:'vitri',cpa:'eg',conc:35,eq:5,rate:20000,add:['treh','ice']}},
+ {id:'hsc',name:'Blood stem cells (bone marrow, cord blood)',group:'Stem cells',status:'Routine',shape:'round',color:'#7A5AF8',frag:1.1,r0:1,pref:{},
+  use:'Transplants for leukaemia and other blood diseases; public and private cord-blood banks.',
+  how:'~10 % DMSO with albumin or plasma, controlled-rate freezer, stored in liquid nitrogen.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:15,rate:1,add:['serum']}},
+ {id:'hpsc',name:'Pluripotent stem cells (hESC / iPSC)',group:'Stem cells',status:'Established',shape:'cluster',color:'#12A594',frag:1.6,r0:1,rock:true,pref:{gly:.6},
+  use:'Disease models, drug screening and future cell therapies.',
+  how:'10 % DMSO with serum or a defined freezing medium; add ROCK inhibitor when thawing.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:10,rate:1,add:['serum','rock','anti']}},
+ {id:'msc',name:'Mesenchymal stem cells',group:'Stem cells',status:'Established',shape:'round',color:'#3D8BD9',frag:1.15,r0:1,pref:{},
+  use:'Regenerative-medicine trials and cell banks.',
+  how:'10 % DMSO in serum or serum-free medium at −1 °C/min.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:15,rate:1,add:['serum']}},
+ {id:'tcell',name:'T cells (CAR-T therapy)',group:'Immune cells',status:'Established',shape:'round',color:'#2CA58D',frag:1.25,r0:1,pref:{},
+  use:'Engineered patient cells are frozen and shipped to the hospital, then infused.',
+  how:'~5–10 % DMSO with human serum albumin.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:15,rate:1,add:['serum','anti']}},
+ {id:'fibro',name:'Cell lines & fibroblasts',group:'Lab cells',status:'Routine',shape:'round',color:'#4C9F70',frag:.9,r0:1,pref:{},
+  use:'Every research lab: HeLa, CHO, HEK cells and skin fibroblasts.',
+  how:'Growth medium + 10–20 % serum + 5–10 % DMSO, in a −1 °C/min freezing container.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:15,rate:1,add:['serum']}},
+ {id:'bact',name:'Bacteria & yeast',group:'Microbes',status:'Routine',shape:'rod',color:'#8A6D3B',frag:.6,r0:1,toxScale:.2,pref:{gly:1.1},
+  use:'Culture collections and strain banks, stable for decades.',
+  how:'15–25 % glycerol stock, straight into a −80 °C freezer.',
+  rec:{mode:'slow',cpa:'gly',conc:20,eq:15,rate:1,add:[]}},
+ {id:'plate',name:'Platelets',group:'Blood',status:'Emerging',shape:'disc',color:'#B98CCB',frag:1.9,r0:1,pref:{},
+  use:'Room-temperature platelets last only ~5–7 days, so frozen ones could help in trauma care.',
+  how:'~5–6 % DMSO, frozen at −80 °C. Used in limited military settings.',
+  rec:{mode:'slow',cpa:'dmso',conc:6,eq:20,rate:1,add:['serum','anti']}},
+ {id:'hepa',name:'Hepatocytes (liver cells)',group:'Organ cells',status:'Established',shape:'round',color:'#A9583F',frag:1.9,r0:1,pref:{},
+  use:'Drug-toxicity testing; possible bridge therapy for liver failure.',
+  how:'10 % DMSO with serum-based medium. Often attach poorly after thaw.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:10,rate:1,add:['serum','macro','anti']}},
+ {id:'islet',name:'Pancreatic islets',group:'Organ cells',status:'Emerging',shape:'cluster',color:'#D96B6B',frag:2.1,r0:1,pref:{},
+  use:'Diabetes research and transplantation. Clumps are hard to protect evenly.',
+  how:'~10 % DMSO plus antioxidants; vitrification under study.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:10,rate:1,add:['serum','anti','macro']}},
+ {id:'tissue',name:'Skin & heart valves (tissue)',group:'Tissue',status:'Established',shape:'tissue',color:'#C97B5A',frag:1.8,r0:1,permScale:2,pref:{},
+  use:'Skin grafts for burn patients and donor heart valves in tissue banks.',
+  how:'DMSO or glycerol with slow controlled cooling; thick tissue needs longer soaking.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:45,rate:1,add:['serum','macro']}},
+ {id:'neuron',name:'Neurons & heart muscle cells',group:'Difficult cells',status:'Experimental',shape:'neuron',color:'#E1A32B',frag:3.4,r0:1,pref:{},
+  use:'Long, delicate, highly connected cells. Freezing works but many die or lose function.',
+  how:'DMSO + antioxidants + apoptosis inhibitors; still an active research area.',
+  rec:{mode:'slow',cpa:'dmso',conc:10,eq:10,rate:1,add:['serum','anti']}},
+ {id:'organ',name:'Whole organs (kidney, heart, liver)',group:'Organs',status:'Not yet',shape:'organ',color:'#8A94A6',frag:9,r0:1,pref:{},noSim:true,
+  use:'Freezing kills organs: ice damages blood vessels. Researchers are testing vitrification and “nanowarming”; rat kidneys have worked, human organs are not yet possible.',
+  how:'Very high CPA + rapid, uniform warming with magnetic nanoparticles (experimental).',rec:null}
+];
+
+function calc(P){
+  const cell=CELLS.find(c=>c.id===P.cell), cpa=CPAS[P.cpa], slow=P.mode==='slow';
+  const A={protB:0,toxCut:0,slowCut:0,vit:0,post:0};
+  P.add.forEach(k=>{const a=ADDS[k];A.protB+=a.protB||0;A.toxCut+=a.toxCut||0;A.slowCut+=a.slowCut||0;A.vit+=a.vit||0;
+    A.post+=(k==='rock'?(cell.rock?.15:.01):(a.post||0));});
+  A.toxCut=Math.min(A.toxCut,.5);A.protB=Math.min(A.protB,.12);A.slowCut=Math.min(A.slowCut,.4);
+  const pref=(cell.pref&&cell.pref[P.cpa])??1;
+  const tau=(cpa.tau||1)*(cell.permScale||1);
+  const perm=cpa.perm?1-Math.exp(-P.eq/tau):1;
+  const c=P.conc;
+  let prot=1-Math.exp(-c*cpa.eff*pref/4);
+  prot*=cpa.perm?(.4+.6*perm):.5;
+  prot=clamp(prot+A.protB*(c>0?1:.3),0,.98);
+  const cock=slow?1:.5;
+  const tox=1-Math.exp(-cpa.tox*(cell.toxScale||1)*Math.pow(c/10*cock,2)*(P.eq/10)*(1-A.toxCut));
+  let base,fast=0,slw=0,glass=null,ice,dev=0;
+  if(slow){
+    dev=lg(P.rate/cell.r0);
+    fast=dev>0?1-Math.exp(-dev*dev*1.3/(1+prot*2.5)):0;
+    slw=dev<0?1-Math.exp(-dev*dev*.9*(1-A.slowCut)/(1+prot*2)):0;
+    base=Math.exp(-3*Math.pow(1-prot,2));
+    ice=base*(1-fast)*(1-slw);
+  }else{
+    const x=c*(cpa.perm?1:.4)*pref+6*(lg(P.rate)-3)+A.vit+(cpa.perm?-8*(1-perm):0);
+    glass=1/(1+Math.exp(-(x-30)/4));
+    base=glass;ice=glass;
+  }
+  let s=Math.pow(ice*(1-tox),cell.frag)*(1+A.post);
+  s=clamp(s,0,.98);
+  return {perm,prot,base,fast,slw,tox,glass,ice,surv:s,dev,A};
+}
+
+
+const $=s=>document.querySelector(s);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+const ease=t=>t*t*(3-2*t);
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const S={mode:'slow',cell:'fibro',cpa:'dmso',conc:10,eq:15,rate:1,add:['serum'],phase:0,p:0,playing:false,speed:1,M:null};
+const DUR=[5,7,7,10,6,9];
+const STEP=['Healthy cell','Add CPA','Soak','Freeze','Store','Thaw'];
+const STEPSUB=['37 °C','to 4 °C','equilibrate','cool down','−196 °C','warm & wash'];
+const fmt=(n,d=0)=>n.toFixed(d).replace('-','−');
+
+/* ---------- cell icons ---------- */
+function icon(shape,c){
+ const g={
+ disc:`<ellipse cx="22" cy="22" rx="16" ry="16" fill="${c}"/><ellipse cx="22" cy="22" rx="7" ry="7" fill="#fff" opacity=".35"/>`,
+ sperm:`<ellipse cx="14" cy="14" rx="7" ry="5" fill="${c}" transform="rotate(-35 14 14)"/><path d="M18 18 C26 24 20 30 30 34 S38 40 40 40" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+ embryo:`<circle cx="22" cy="22" r="17" fill="none" stroke="${c}" stroke-width="3"/><circle cx="16" cy="17" r="6" fill="${c}"/><circle cx="27" cy="18" r="6" fill="${c}" opacity=".8"/><circle cx="17" cy="28" r="6" fill="${c}" opacity=".8"/><circle cx="28" cy="28" r="6" fill="${c}" opacity=".6"/>`,
+ round:`<circle cx="22" cy="22" r="16" fill="${c}" opacity=".9"/><circle cx="24" cy="20" r="7" fill="#fff" opacity=".4"/>`,
+ cluster:`<circle cx="15" cy="17" r="8" fill="${c}"/><circle cx="28" cy="16" r="8" fill="${c}" opacity=".85"/><circle cx="22" cy="28" r="9" fill="${c}" opacity=".7"/>`,
+ rod:`<rect x="6" y="15" width="32" height="12" rx="6" fill="${c}"/><rect x="10" y="19" width="10" height="4" rx="2" fill="#fff" opacity=".4"/>`,
+ tissue:`<rect x="6" y="6" width="32" height="32" rx="5" fill="${c}" opacity=".3"/><g fill="${c}"><circle cx="15" cy="15" r="4"/><circle cx="28" cy="14" r="4"/><circle cx="14" cy="28" r="4"/><circle cx="28" cy="28" r="4"/></g>`,
+ neuron:`<circle cx="22" cy="22" r="7" fill="${c}"/><g stroke="${c}" stroke-width="3" stroke-linecap="round"><path d="M22 15V4M28 18l10-8M29 24l11 3M16 27L6 36M16 18L6 10"/></g>`,
+ organ:`<path d="M12 10c10-6 24 0 22 14s-14 16-22 8S4 16 12 10z" fill="${c}" opacity=".7"/>`
+ }[shape];
+ return `<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">${g}</svg>`;
+}
+
+/* ---------- setup UI ---------- */
+const cellOf=()=>CELLS.find(c=>c.id===S.cell);
+const rateFromSlider=v=>S.mode==='slow'?Math.pow(10,-1+v*3):Math.pow(10,3+v*2);   // v 0..1
+const sliderFromRate=r=>S.mode==='slow'?(Math.log10(r)+1)/3:(Math.log10(r)-3)/2;
+
+function buildStatic(){
+ $('#cellSel').innerHTML=CELLS.filter(c=>!c.noSim).map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+ $('#cpas').innerHTML=Object.entries(CPAS).map(([k,c])=>`<button data-c="${k}" aria-pressed="false">${c.name}<small>${c.perm?'enters cell':'stays outside'}</small></button>`).join('');
+ $('#adds').innerHTML=Object.entries(ADDS).map(([k,a])=>`<label><input type="checkbox" data-a="${k}"><span>${a.name}<small>${a.why}</small></span></label>`).join('');
+ $('#steps').innerHTML=STEP.map((s,i)=>`<button class="step" data-i="${i}">${s}<b>${STEPSUB[i]}</b><span class="bar"></span></button>`).join('');
+ $('#bars').innerHTML='<div class="row"></div>'.repeat(4);
+ $('#dots').innerHTML='<span></span>'.repeat(100);
+ // events
+ $('#cellSel').onchange=e=>{S.cell=e.target.value;refresh()};
+ $('#cpas').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.cpa=b.dataset.c;refresh()};
+ $('#adds').onchange=e=>{const k=e.target.dataset.a;S.add=S.add.filter(x=>x!==k);if(e.target.checked)S.add.push(k);refresh()};
+ $('#conc').oninput=e=>{S.conc=+e.target.value;refresh(true)};
+ $('#eq').oninput=e=>{S.eq=+e.target.value;refresh(true)};
+ $('#rate').oninput=e=>{S.rate=rateFromSlider(+e.target.value/100);refresh(true)};
+ $('#mode').onclick=e=>{const b=e.target.closest('button');if(!b)return;setMode(b.dataset.m)};
+ $('#useRec').onclick=()=>applyRec(S.cell);
+ $('#steps').onclick=e=>{const b=e.target.closest('.step');if(!b)return;setPhase(+b.dataset.i,0);S.playing=true;syncPlay()};
+ $('#play').onclick=()=>{if(S.phase===5&&S.p>=1){setPhase(0,0)}S.playing=!S.playing;syncPlay()};
+ $('#restart').onclick=()=>{setPhase(0,0);S.playing=true;syncPlay()};
+ $('#speed').onchange=e=>S.speed=+e.target.value;
+ addEventListener('keydown',e=>{if(e.code==='Space'&&$('#p-sim').classList.contains('on')&&!/SELECT|INPUT/.test(document.activeElement.tagName)){e.preventDefault();$('#play').click()}});
+ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+}
+function showTab(t){
+ document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));
+ if(t==='sim'){resize();refresh()}
+}
+function setMode(m,keep){
+ S.mode=m;
+ if(!keep){ if(m==='vitri'){S.conc=35;S.eq=5;S.rate=20000;if(!CPAS[S.cpa].perm)S.cpa='eg'}else{S.conc=10;S.eq=15;S.rate=1} }
+ refresh();
+}
+function applyRec(id){
+ const c=CELLS.find(x=>x.id===id);if(!c||!c.rec)return;
+ S.cell=id;S.mode=c.rec.mode;S.cpa=c.rec.cpa;S.conc=c.rec.conc;S.eq=c.rec.eq;S.rate=c.rec.rate;S.add=[...c.rec.add];
+ refresh();
+}
+function syncPlay(){$('#play').textContent=S.playing?'Pause':(S.phase===5&&S.p>=1?'Play again':(S.phase===0&&S.p===0?'Play full demo':'Resume'))}
+
+/* ---------- refresh UI + model ---------- */
+function refresh(fromSlider){
+ const slow=S.mode==='slow',M=S.M=calc(S);
+ const cell=cellOf(),cpa=CPAS[S.cpa];
+ $('#cellSel').value=S.cell;
+ document.querySelectorAll('#mode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===S.mode));
+ $('#modeH').textContent=slow?'Cool gently (about 1 °C per minute) so water leaves cells before ice can form inside.':'Use a lot of CPA and plunge extremely fast, so the liquid turns into glass and no ice crystals form.';
+ document.querySelectorAll('#cpas button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===S.cpa));
+ $('#cpaNote').textContent=cpa.full+': '+cpa.note+' Typical: '+cpa.typ+'.';
+ document.querySelectorAll('#adds input').forEach(i=>i.checked=S.add.includes(i.dataset.a));
+ const cs=$('#conc'),es=$('#eq'),rs=$('#rate');
+ if(!fromSlider){
+  cs.min=0;cs.max=slow?40:60;cs.step=.5;cs.value=S.conc;
+  es.min=slow?5:1;es.max=slow?60:15;es.step=slow?5:1;es.value=S.eq;
+  rs.min=0;rs.max=100;rs.step=1;rs.value=Math.round(clamp(sliderFromRate(S.rate),0,1)*100);
+ }
+ $('#concV').textContent=S.conc+' %';
+ $('#eqV').textContent=S.eq+' min';
+ $('#rateV').textContent=slow?fmt(S.rate,S.rate<1?1:0)+' °C/min':Math.round(S.rate).toLocaleString()+' °C/min';
+ $('#concH').textContent=slow?'Lab range: 5–10 % for most cells (0 = no protection).':'Vitrification needs about 30–50 % total CPA, often two CPAs mixed to reduce poison.';
+ $('#rateH').textContent=slow?'Sweet spot is usually about 1 °C/min for mammalian cells.':'Plunging into liquid nitrogen on a thin carrier reaches 10,000+ °C/min.';
+ // gauge
+ const pct=Math.round(M.surv*100);
+ $('#surv').textContent=pct+'%';
+ $('#ring').style.strokeDashoffset=390*(1-M.surv);
+ $('#ring').style.stroke=pct>=70?'var(--teal)':pct>=40?'var(--amber)':'var(--coral)';
+ // bars
+ const rows=slow?[['Ice crystals (too little CPA)',1-M.base],['Cooled too fast: ice inside',M.fast],['Cooled too slow: dehydration',M.slw],['CPA toxicity',M.tox]]
+   :[['Ice forms (not glassy)',1-M.glass],['—',0],['—',0],['CPA toxicity',M.tox]];
+ const br=document.querySelectorAll('#bars .row');
+ rows.forEach((r,i)=>{br[i].style.display=r[0]==='—'?'none':'';br[i].innerHTML=`<span>${r[0]}</span><div class="track"><div class="fillb" style="width:${Math.round(r[1]*100)}%"></div></div><span>${Math.round(r[1]*100)}%</span>`});
+ coach(M);
+ drawChart();
+ recipe();
+ updateDots();
+ narrate();
+}
+function coach(M){
+ const slow=S.mode==='slow',cpa=CPAS[S.cpa],t=[];
+ if(S.conc<=1)t.push('No CPA: ice crystals form everywhere and puncture the cell. Add a cryoprotectant.');
+ if(slow){
+  if(M.dev>.35)t.push('Cooling is too fast: water cannot leave in time, so ice forms inside the cell.');
+  if(M.dev<-.35)t.push('Cooling is too slow: cells shrivel and the leftover salty solution burns them.');
+ }else{
+  if(M.glass<.7)t.push('Not glassy enough. Raise the CPA or cool faster, or add ice blockers and sugars.');
+ }
+ if(cpa.perm&&M.perm<.7&&S.conc>1)t.push(cpa.name+' has only reached '+Math.round(M.perm*100)+'% of the cell interior. Soak longer.');
+ if(!cpa.perm&&S.conc>1)t.push(cpa.name+' cannot enter cells. It helps outside only; pair it with DMSO, glycerol or ethylene glycol.');
+ if(M.tox>.2)t.push('Toxicity is high ('+Math.round(M.tox*100)+'%). Lower the CPA, shorten the soak, or add serum.');
+ if(cellOf().rock&&!S.add.includes('rock'))t.push('Stem cells often die after thaw. Try the ROCK inhibitor.');
+ const good=!t.length;
+ $('#coach').className='coach'+(good?' good':'');
+ $('#coach').textContent=good?'Nicely balanced: enough protection, sensible cooling speed and low toxicity.':t.slice(0,2).join(' ');
+}
+function recipe(){
+ const cpa=CPAS[S.cpa],slow=S.mode==='slow';
+ const serum=S.add.includes('serum')?(slow?20:20):0;
+ const cpaP=S.conc,rest=Math.max(0,100-cpaP-serum);
+ $('#mix').innerHTML=[[cpa.name+' '+cpaP+'%',cpaP,'#E39A14'],['Serum / protein '+serum+'%',serum,'#6D4DE0'],['Base medium '+rest+'%',rest,'#1F6FD1']].filter(x=>x[1]>0).map(x=>`<div style="flex:${x[1]};background:${x[2]}" title="${x[0]}">${x[1]>12?x[0].split(' ')[0]:''}</div>`).join('');
+ const L=[`<b>${cpa.name}</b> at ${S.conc} % ${cpa.perm?'(enters cells)':'(stays outside)'}`,
+  serum?`Serum, albumin or yolk: about ${serum} %`:null,`Base medium (buffered salts and nutrients) for the rest`,
+  ...S.add.filter(k=>k!=='serum').map(k=>ADDS[k].name),
+  slow?`Add CPA cold (4 °C), soak ${S.eq} min, cool ${fmt(S.rate,S.rate<1?1:0)} °C/min to −80 °C, then into liquid nitrogen`:`Add CPA in 2–3 steps, soak ${S.eq} min, plunge at ~${Math.round(S.rate).toLocaleString()} °C/min into liquid nitrogen`,
+  `Thaw quickly at 37 °C, then dilute or wash out the CPA`].filter(Boolean);
+ $('#recipe').innerHTML=L.map(x=>`<li>${x}</li>`).join('');
+}
+function drawChart(){
+ const c=$('#chart'),x=c.getContext('2d'),W=c.width,H=c.height,slow=S.mode==='slow';
+ x.clearRect(0,0,W,H);
+ const cs=getComputedStyle(document.documentElement);const line=cs.getPropertyValue('--line').trim()||'#ccc',mut=cs.getPropertyValue('--muted').trim()||'#666';
+ const pl=46,pr=14,pt=14,pb=42,w=W-pl-pr,h=H-pt-pb;
+ x.strokeStyle=line;x.fillStyle=mut;x.lineWidth=1;x.font='16px Instrument Sans, sans-serif';
+ for(let i=0;i<=4;i++){const yy=pt+h*(1-i/4);x.beginPath();x.moveTo(pl,yy);x.lineTo(W-pr,yy);x.stroke();x.fillText(i*25+'%',4,yy+5)}
+ const N=70,pts=[];
+ for(let i=0;i<=N;i++){const t=i/N;let P={...S};if(slow)P.rate=Math.pow(10,-1+3*t);else P.conc=60*t;pts.push(calc(P).surv)}
+ x.beginPath();pts.forEach((s,i)=>{const px=pl+w*i/N,py=pt+h*(1-s);i?x.lineTo(px,py):x.moveTo(px,py)});
+ x.strokeStyle='#1F6FD1';x.lineWidth=3;x.stroke();
+ x.lineTo(pl+w,pt+h);x.lineTo(pl,pt+h);x.fillStyle='rgba(31,111,209,.14)';x.fill();
+ const t=slow?sliderFromRate(S.rate):S.conc/60,px=pl+w*clamp(t,0,1),py=pt+h*(1-S.M.surv);
+ x.beginPath();x.arc(px,py,8,0,7);x.fillStyle=S.M.surv>.7?'#0E9C8B':S.M.surv>.4?'#E39A14':'#E8564E';x.fill();x.strokeStyle='#fff';x.lineWidth=3;x.stroke();
+ x.fillStyle=mut;x.font='15px Instrument Sans, sans-serif';x.textAlign='center';
+ if(slow){['0.1','1','10','100'].forEach((l,i)=>x.fillText(l,pl+w*i/3,H-22));x.fillText('Cooling speed (°C per minute, log scale)',pl+w/2,H-4)}
+ else{[0,20,40,60].forEach((l,i)=>x.fillText(l+'%',pl+w*i/3,H-22));x.fillText('CPA concentration',pl+w/2,H-4)}
+ x.textAlign='left';
+ $('#chartT').textContent=slow?'Survival vs cooling speed':'Survival vs CPA concentration';
+ $('#chartC').textContent=slow?'Too slow and too fast both hurt: the dot sits on your current setting.':'Below a threshold the liquid crystallises; above it turns to glass, until toxicity bites.';
+}
+const U=(()=>{const r=rng(42);return Array.from({length:100},()=>r())})();
+function updateDots(){
+ const reveal=S.phase===5&&S.p>.55||(S.phase===5&&S.p>=1);
+ const spans=$('#dots').children;
+ for(let i=0;i<100;i++){spans[i].className=reveal?(U[i]<S.M.surv?'a':'d'):''}
+ $('#dotsC').textContent=reveal?`${document.querySelectorAll('#dots .a').length} of 100 cells alive (green). Change the recipe and watch it update.`:'Run the demo to the thaw step to reveal which cells lived.';
+}
+
+/* ---------- narration ---------- */
+function narrate(){
+ const cpa=CPAS[S.cpa],slow=S.mode==='slow',M=S.M,r=fmt(S.rate,S.rate<1?1:0);
+ const N=[
+ ['A healthy cell at 37 °C','Cells are about 70 % water. Frozen plain, that water becomes sharp ice crystals that tear the membrane. Cryoprotectants (CPAs) are the fix.'],
+ [`Add ${cpa.name}, cold`,`We chill to 4 °C so the CPA does less harm, then add ${S.conc} % ${cpa.name} gradually. Water rushes out first, so the cell shrinks.`],
+ [`Soak for ${S.eq} min`,cpa.perm?`${cpa.name} slowly slips inside and replaces water. The cell re-swells. ${Math.round(M.perm*100)} % of the way in after ${S.eq} min.`:`${cpa.name} is too big to enter. It stays outside, holding the cell in a gentle, shrunken state and supporting the membrane.`],
+ [slow?`Freeze slowly, ${r} °C/min`:`Vitrify: plunge at ~${Math.round(S.rate).toLocaleString()} °C/min`,slow?'Ice forms outside first, drawing water out of the cell. The CPA keeps this dehydration gentle and prevents ice growing inside.':'The liquid thickens so fast that molecules never line up into crystals. It sets into a glass with no ice at all.'],
+ ['Store at −196 °C (liquid nitrogen)','Nothing can move or react at this temperature, so biological time stops. Cells can wait for decades.'],
+ ['Thaw fast and wash out the CPA',`Warm quickly at 37 °C so ice cannot regrow, then dilute the CPA. Expected survival with this recipe: ${Math.round(M.surv*100)} %.`]];
+ const n=N[S.phase];
+ $('#narr').innerHTML=`<h2>${n[0]}</h2><p>${n[1]}</p>`;
+ $('#phaseChip').textContent=(S.phase+1)+'/6  '+STEP[S.phase];
+ document.querySelectorAll('.step').forEach((s,i)=>{s.classList.toggle('on',i===S.phase);s.classList.toggle('done',i<S.phase||(i===5&&S.phase===5&&S.p>=1));s.querySelector('.bar').style.width=i===S.phase&&!(i===5&&S.p>=1)?(S.p*100)+'%':''});
+ $('#legend').innerHTML=`<span><i style="background:#8fd0ff"></i>Water</span><span><i style="background:${cpa.perm?'#F5B93F':'#B39DFF'}"></i>${cpa.name}</span><span><i style="background:#fff"></i>Ice</span>`;
+}
+
+/* ---------- canvas scene ---------- */
+const cv=$('#cv'),ctx=cv.getContext('2d');const LW=900,LH=540,CX=440,CY=280,R0=112;
+function resize(){const r=cv.getBoundingClientRect();if(!r.width)return;const d=Math.min(devicePixelRatio||1,2);cv.width=r.width*d;cv.height=r.height*d}
+addEventListener('resize',resize);
+
+const R=rng(7);
+const water=Array.from({length:80},()=>({x:R()*LW,y:R()*LH,a:R()*6.28}));
+const cpaOut=Array.from({length:170},()=>({x:R()*LW,y:R()*LH,a:R()*6.28}));
+const cpaIn=Array.from({length:110},()=>{const a=R()*6.28,r=Math.sqrt(R())*.8;return{x:Math.cos(a)*r,y:Math.sin(a)*r,a:R()*6.28}});
+const seeds=[];{let k=0;while(seeds.length<18&&k++<500){const x=R()*LW,y=R()*LH;if(Math.hypot(x-CX,y-CY)>R0+40)seeds.push({x,y,rot:R()*1.05,s:.6+R()*.7})}}
+const orgs=Array.from({length:7},()=>({a:R()*6.28,r:.25+R()*.45,rot:R()*3,s:.5+R()*.4}));
+const bg=Array.from({length:7},()=>({x:R()*LW,y:R()*LH,r:30+R()*60}));
+const inIce=Array.from({length:9},()=>({a:R()*6.28,r:R()*.7,rot:R()*1.05,s:.5+R()*.6}));
+let fx=[],prevV=1,acc=0,tAnim=0,crossAcc=0;
+
+function flake(x,y,len,rot,w){
+ ctx.lineWidth=w;ctx.beginPath();
+ for(let i=0;i<6;i++){const a=rot+i*Math.PI/3,ca=Math.cos(a),sa=Math.sin(a);
+  ctx.moveTo(x,y);ctx.lineTo(x+ca*len,y+sa*len);
+  for(const f of[.45,.75]){const bx=x+ca*len*f,by=y+sa*len*f,bl=len*(.42-.2*f);
+   for(const d of[-1,1]){const b=a+d*1.05;ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(b)*bl,by+Math.sin(b)*bl)}}}
+ ctx.stroke();
+}
+
+function frz(T,M,slow){
+ if(slow){
+  const dehyd=(.12+.36*(1/(1+Math.exp(2.2*M.dev))))*(1-.4*M.prot);
+  return{iceOut:sstep(-4,-35,T)*(1-.65*M.prot),iceIn:clamp(M.fast+(1-M.base)*.9,0,1)*sstep(-12,-45,T),glass:0,dv:dehyd*sstep(-4,-40,T)};
+ }
+ return{iceOut:(1-M.glass)*sstep(-30,-120,T),iceIn:(1-M.glass)*sstep(-40,-140,T),glass:M.glass*sstep(-60,-140,T),dv:.08*sstep(-20,-80,T)};
+}
+
+function sceneState(){
+ const M=S.M,slow=S.mode==='slow',cpa=CPAS[S.cpa],p=S.p,ph=S.phase;
+ const o={T:37,out:0,inn:0,v:1,dmg:0,iceOut:0,iceIn:0,glass:0,wash:0,frozenEnd:false};
+ const endFrz=frz(slow?-80:-196,M,slow);
+ const cpaFrac=clamp(S.conc/(slow?40:60),0,1);o.cf=cpaFrac;
+ const fail=1-M.surv;
+ const setF=T=>{const f=frz(T,M,slow);o.iceOut=f.iceOut;o.iceIn=f.iceIn;o.glass=f.glass;o.v=(cpa.perm?1:.82)*(1-f.dv)};
+ if(ph===0){}
+ else if(ph===1){o.T=lerp(37,4,sstep(0,.6,p));o.out=ease(p);o.v=lerp(1,cpa.perm?.86:.82,sstep(.05,.7,p))}
+ else if(ph===2){o.T=4;o.out=1;o.inn=cpa.perm?M.perm*ease(p):0;o.v=cpa.perm?lerp(.86,1,ease(p)*(.3+.7*M.perm)):.82;o.dmg=M.tox*ease(p)}
+ else if(ph===3){o.T=slow?lerp(4,-80,p):lerp(4,-196,1-Math.pow(1-p,3));o.out=1;o.inn=cpa.perm?M.perm:0;setF(o.T);o.dmg=lerp(M.tox,fail,sstep(-5,-60,o.T))}
+ else if(ph===4){o.T=slow?lerp(-80,-196,sstep(0,.25,p)):-196;o.out=1;o.inn=cpa.perm?M.perm:0;setF(o.T);o.dmg=fail;o.frozenEnd=true}
+ else{o.T=p<.5?lerp(-196,0,sstep(0,.5,p)):lerp(0,37,(p-.5)*2);o.wash=sstep(.5,.92,p);o.out=1-o.wash;o.inn=(cpa.perm?M.perm:0)*(1-o.wash);setF(o.T);
+  o.v=(cpa.perm?1:.82)*(1-frz(o.T,M,slow).dv);if(!cpa.perm)o.v=lerp(o.v,1,o.wash);o.v+=.05*Math.sin(Math.PI*o.wash);o.dmg=fail*sstep(.2,.9,p)*.9+fail*.1*sstep(-5,20,o.T)}
+ return o;
+}
+
+function draw(dt){
+ const M=S.M;if(!M)return;const slow=S.mode==='slow',cpa=CPAS[S.cpa];
+ const W=cv.width,H=cv.height;if(!W)return;
+ const o=sceneState();tAnim+=dt;
+ const mS=clamp((o.T+196)/233,0,1)*.9+.03*(o.T>-150?1:0);
+ ctx.setTransform(W/LW,0,0,H/LH,0,0);
+ // background medium
+ const tt=Math.pow(clamp((37-o.T)/233,0,1),.7);
+ const A=[250,213,206],B=[20,52,92];
+ const col=A.map((a,i)=>Math.round(lerp(a,B[i],tt)));
+ const g=ctx.createRadialGradient(CX,CY,50,CX,CY,620);
+ g.addColorStop(0,`rgb(${col})`);g.addColorStop(1,`rgb(${col.map(c=>Math.round(c*.72))})`);
+ ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+ ctx.fillStyle='rgba(255,255,255,.07)';bg.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()});
+ // cell geometry
+ const Rc=R0*o.v,shake=o.dmg;
+ const nz=a=>Math.sin(3*a+tAnim*1.2*mS)+.6*Math.sin(5*a-tAnim*1.6*mS)+.3*Math.sin(9*a+tAnim*2.2*mS);
+ const memb=new Path2D();
+ for(let i=0;i<=72;i++){const a=i/72*6.283,r=Rc*(1+.012*nz(a)+ (o.dmg>.35?(o.dmg-.35)*.11*Math.sin(7*a+2):0)*(o.T>-40?1:.3));const x=CX+Math.cos(a)*r,y=CY+Math.sin(a)*r;i?memb.lineTo(x,y):memb.moveTo(x,y)}
+ memb.closePath();
+ // extracellular ice
+ if(o.iceOut>.01){
+  ctx.strokeStyle=`rgba(235,248,255,${.4+.5*o.iceOut})`;ctx.lineCap='round';
+  const sc=1+.5*(1-M.prot);
+  seeds.forEach(s=>flake(s.x,s.y,140*s.s*o.iceOut*sc,s.rot,1.2+2*o.iceOut));
+ }
+ // water + cpa outside
+ const step=(p,sp)=>{p.a+=(Math.random()-.5)*.8;p.x+=Math.cos(p.a)*sp*dt*60*mS;p.y+=Math.sin(p.a)*sp*dt*60*mS;
+  if(p.x<0)p.x+=LW;if(p.x>LW)p.x-=LW;if(p.y<0)p.y+=LH;if(p.y>LH)p.y-=LH;
+  const dx=p.x-CX,dy=p.y-CY,d=Math.hypot(dx,dy);if(d<Rc+6){p.x=CX+dx/d*(Rc+8);p.y=CY+dy/d*(Rc+8)}};
+ const frozen=1-clamp(mS/.9,0,1);
+ water.forEach(p=>{step(p,1.1);ctx.fillStyle=frozen>.5?'rgba(220,240,255,.75)':'rgba(130,195,255,.75)';ctx.beginPath();ctx.arc(p.x,p.y,2.6,0,7);ctx.fill()});
+ const nOut=Math.round(o.out*o.cf*170*1.15);
+ for(let i=0;i<Math.min(nOut,170);i++){const p=cpaOut[i];step(p,.9);
+  if(cpa.perm){ctx.fillStyle='#F5B93F';ctx.beginPath();ctx.arc(p.x,p.y,4,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.arc(p.x-1,p.y-1,1.3,0,7);ctx.fill()}
+  else{ctx.fillStyle='#B39DFF';ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+.5;ctx.lineTo(p.x+Math.cos(a)*6,p.y+Math.sin(a)*6)}ctx.fill()}}
+ // cell body
+ const dc=o.dmg;const mix=(a,b,t)=>a.map((v,i)=>Math.round(lerp(v,b[i],t)));
+ const cyt=mix([176,232,222],[230,150,140],clamp(dc*1.1,0,1));
+ const cg=ctx.createRadialGradient(CX-Rc*.3,CY-Rc*.3,Rc*.1,CX,CY,Rc);
+ cg.addColorStop(0,`rgb(${cyt.map(c=>Math.min(255,c+30))})`);cg.addColorStop(1,`rgb(${cyt})`);
+ ctx.fillStyle=cg;ctx.fill(memb);
+ ctx.save();ctx.clip(memb);
+ // organelles
+ orgs.forEach(g=>{const x=CX+Math.cos(g.a+Math.sin(tAnim*.3*mS+g.rot)*.15)*g.r*Rc,y=CY+Math.sin(g.a+Math.sin(tAnim*.3*mS+g.rot)*.15)*g.r*Rc;
+  ctx.save();ctx.translate(x,y);ctx.rotate(g.rot);ctx.fillStyle=dc>.5?'rgba(150,70,70,.7)':'rgba(240,140,90,.85)';ctx.beginPath();ctx.ellipse(0,0,15*g.s*o.v,7*g.s*o.v,0,0,7);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-8*g.s,0);ctx.lineTo(8*g.s,0);ctx.stroke();ctx.restore()});
+ ctx.fillStyle=dc>.5?'#7a4a6a':'#5b52c4';ctx.beginPath();ctx.arc(CX,CY,Rc*.3,0,7);ctx.fill();
+ ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(CX-Rc*.07,CY-Rc*.07,Rc*.1,0,7);ctx.fill();
+ // cpa inside
+ const nIn=Math.round(o.inn*o.cf*110*1.4);
+ for(let i=0;i<Math.min(nIn,110);i++){const p=cpaIn[i];p.a+=(Math.random()-.5)*.8;p.x+=Math.cos(p.a)*.004*mS*dt*60;p.y+=Math.sin(p.a)*.004*mS*dt*60;
+  const d=Math.hypot(p.x,p.y);if(d>.85){p.x*=.85/d;p.y*=.85/d}
+  ctx.fillStyle='#F5B93F';ctx.beginPath();ctx.arc(CX+p.x*Rc,CY+p.y*Rc,3.6,0,7);ctx.fill()}
+ // ice inside
+ if(o.iceIn>.02){ctx.strokeStyle=`rgba(255,255,255,${.5+.5*o.iceIn})`;inIce.forEach(s=>flake(CX+Math.cos(s.a)*s.r*Rc,CY+Math.sin(s.a)*s.r*Rc,60*s.s*o.iceIn,s.rot,1.5+1.5*o.iceIn));
+  ctx.strokeStyle=`rgba(232,86,78,${.5*o.iceIn})`;ctx.lineWidth=2;ctx.stroke(memb)}
+ ctx.restore();
+ // membrane
+ const mc=mix([14,156,139],[232,86,78],clamp(dc*1.2,0,1));
+ ctx.lineWidth=5;ctx.strokeStyle=`rgb(${mc})`;ctx.stroke(memb);
+ // glass sheen
+ if(o.glass>.02){const gg=ctx.createLinearGradient(0,0,LW,LH);gg.addColorStop(0,`rgba(190,230,255,${.28*o.glass})`);gg.addColorStop(.5,`rgba(255,255,255,${.06*o.glass})`);gg.addColorStop(1,`rgba(150,200,255,${.26*o.glass})`);ctx.fillStyle=gg;ctx.fillRect(0,0,LW,LH);
+  ctx.strokeStyle=`rgba(255,255,255,${.3*o.glass})`;ctx.lineWidth=1;for(let i=0;i<5;i++){const x=(i*230+tAnim*10)%(LW+200)-100;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-140,LH);ctx.stroke()}}
+ // frost tint
+ if(o.T<-10){ctx.fillStyle=`rgba(120,190,255,${.16*clamp(-o.T/196,0,1)})`;ctx.fillRect(0,0,LW,LH)}
+ // effects (crossing / water flux)
+ const dv=(o.v-prevV)/Math.max(dt,.001);
+ if(dt>0){acc+=Math.abs(o.v-prevV)*900;
+  while(acc>1){acc--;const a=Math.random()*6.283,out=dv<0;fx.push({x:CX+Math.cos(a)*(out?Rc*.95:Rc+50),y:CY+Math.sin(a)*(out?Rc*.95:Rc+50),vx:Math.cos(a)*(out?1:-1)*70,vy:Math.sin(a)*(out?1:-1)*70,life:.9,c:'#8fd0ff',r:3})}
+  const flow=(S.phase===2&&cpa.perm?16*(S.playing?1:0):0)+(S.phase===5&&cpa.perm&&o.wash>0&&o.wash<1?16:0);
+  crossAcc+=flow*dt*S.speed;while(crossAcc>1){crossAcc--;const a=Math.random()*6.283,inn=S.phase===2;fx.push({x:CX+Math.cos(a)*(inn?Rc+55:Rc),y:CY+Math.sin(a)*(inn?Rc+55:Rc),vx:Math.cos(a)*(inn?-1:1)*60,vy:Math.sin(a)*(inn?-1:1)*60,life:.9,c:'#F5B93F',r:4.5})}}
+ prevV=o.v;
+ fx=fx.filter(f=>(f.life-=dt)>0);fx.forEach(f=>{f.x+=f.vx*dt;f.y+=f.vy*dt;ctx.globalAlpha=clamp(f.life*1.6,0,1);ctx.fillStyle=f.c;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,7);ctx.fill();ctx.globalAlpha=1});
+ // vignette
+ const vg=ctx.createRadialGradient(LW/2,LH/2,LH*.45,LW/2,LH/2,LW*.62);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,20,.4)');ctx.fillStyle=vg;ctx.fillRect(0,0,LW,LH);
+ // result sparkle
+ const done=S.phase===5&&S.p>.85;
+ if(done){const ok=M.surv>=.5,k=(S.p-.85)/.15;ctx.strokeStyle=ok?'rgba(46,220,180,.9)':'rgba(232,86,78,.9)';ctx.lineWidth=4;ctx.globalAlpha=1-Math.abs(Math.sin(tAnim*2))*.5;ctx.beginPath();ctx.arc(CX,CY,Rc+16+Math.sin(tAnim*3)*4,0,7);ctx.stroke();ctx.globalAlpha=1}
+ // HUD
+ $('#tnum').textContent=fmt(o.T,0)+' °C';
+ $('#tfill').style.height=(clamp((o.T+196)/233,0,1)*100)+'%';
+ const v=$('#verdict');
+ if(done){v.style.display='block';v.textContent=M.surv>=.5?'This cell survived':'This cell was damaged';v.style.background=M.surv>=.5?'rgba(14,156,139,.92)':'rgba(232,86,78,.92)'}else v.style.display='none';
+}
+function buildTicks(){
+ const th=$('#thermo');[[37,'body 37'],[4,'fridge 4'],[-80,'freezer −80'],[-196,'liquid N₂ −196']].forEach(([t,l])=>{
+  const d=document.createElement('div');d.className='tick';const pos=1-(t+196)/233;
+  d.style.top='calc(34px + (100% - 42px) * '+pos+')';d.textContent=l;th.appendChild(d)});
+}
+function setPhase(i,p){S.phase=i;S.p=p;prevV=1;fx=[];syncPlay();narrate();updateDots()}
+
+/* ---------- guide + cells pages ---------- */
+function buildPages(){
+ const st=['All','Routine','Established','Emerging','Experimental','Not yet'];let cur='All';
+ const F=$('#filters');F.innerHTML=st.map(s=>`<button aria-pressed="${s===cur}" data-s="${s}">${s}</button>`).join('');
+ const grid=()=>{ $('#cellGrid').innerHTML=CELLS.filter(c=>cur==='All'||c.status===cur).map(c=>`<div class="card cc"><div class="hd">${icon(c.shape,c.color)}<div><h3>${c.name}</h3><span class="badge b-${c.status.split(' ')[0]}">${c.status}</span></div></div>
+  <p><span class="k">Why freeze it:</span> ${c.use}</p><p><span class="k">How:</span> ${c.how}</p>${c.noSim?'':`<button class="btn" data-try="${c.id}">Try it in the simulator</button>`}</div>`).join('')};
+ F.onclick=e=>{const b=e.target.closest('button');if(!b)return;cur=b.dataset.s;F.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));grid()};
+ $('#cellGrid').onclick=e=>{const b=e.target.closest('[data-try]');if(!b)return;applyRec(b.dataset.try);setPhase(0,0);showTab('sim');scrollTo({top:0,behavior:'smooth'})};
+ grid();
+ $('#why').innerHTML=[['Why cells die when frozen','Ice crystals pierce membranes, and as water freezes outside the cell the leftover salt gets concentrated and pulls water out. Both kill cells.'],
+  ['What a CPA does','It replaces water inside the cell and lowers the freezing point, so far less ice forms and the cell shrinks gently instead of violently.'],
+  ['Slow freezing','~1 °C/min with 5–10 % CPA. Cheap and standard for cell lines, blood stem cells and sperm.'],
+  ['Vitrification','30–50 % CPA and ultra-fast cooling makes a glass instead of ice. Best for eggs, embryos and delicate tissues, but the high CPA is toxic.']]
+  .map(([h,t])=>`<div class="card"><h3>${h}</h3><p>${t}</p></div>`).join('');
+ $('#cpaT').innerHTML='<tr><th>CPA</th><th>Enters cell?</th><th>Typical amount</th><th>Notes</th></tr>'+Object.values(CPAS).map(c=>`<tr><td><b>${c.name}</b></td><td>${c.perm?'Yes':'No'}</td><td>${c.typ}</td><td>${c.note}</td></tr>`).join('');
+ $('#addT').innerHTML='<tr><th>Ingredient</th><th>What it adds</th></tr>'+Object.values(ADDS).map(a=>`<tr><td><b>${a.name}</b></td><td>${a.why}</td></tr>`).join('')+'<tr><td><b>Buffered base medium</b></td><td>Salts, glucose and a pH buffer (e.g. HEPES) keep the cell stable while it is out of the incubator.</td></tr>';
+}
+
+/* ---------- main loop ---------- */
+let last=performance.now();
+function loop(now){
+ const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(S.playing){S.p+=dt*S.speed/DUR[S.phase];
+  if(S.p>=1){if(S.phase<5){setPhase(S.phase+1,0)}else{S.p=1;S.playing=false;syncPlay();narrate();updateDots()}}
+  else{const st=document.querySelectorAll('.step')[S.phase];if(st)st.querySelector('.bar').style.width=(S.p*100)+'%'; if(S.phase===5&&Math.abs(S.p-.55)<.02)updateDots()}}
+ if($('#p-sim').classList.contains('on'))draw(S.playing?dt:dt*.6);
+ requestAnimationFrame(loop);
+}
+buildStatic();buildTicks();buildPages();resize();refresh();setPhase(0,0);
+requestAnimationFrame(loop);
+setInterval(()=>{if(S.phase===5&&S.p>.55)updateDots()},400);
+
+</script>
+</body></html>
